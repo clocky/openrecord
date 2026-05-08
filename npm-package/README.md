@@ -144,6 +144,34 @@ if (await restored.isSessionValid()) {
 }
 ```
 
+## Telemetry
+
+This package sends anonymous usage events (think: Next.js / Vercel CLI
+telemetry) so we can see which scrapers are actually exercised in the
+wild and prioritize fixes accordingly.
+
+What is collected:
+
+- The event name (e.g. `scraper_login_started`) and the MyChart hostname
+  the call targeted (the portal domain — not your machine's hostname).
+- OS platform, architecture, OS version, and runtime version (e.g.
+  `bun 1.3.9` or `node v22.11.0`).
+- A stable random UUID generated once per project install and cached
+  at `<your-project>/node_modules/.cache/mychart-connector/anonymous-id`
+  (same convention Babel / ESLint / Webpack use). Used purely for
+  dedupe. Never written outside `node_modules`. Cleared whenever you
+  reinstall.
+
+What is **not** collected: your public IP, OS hostname, OS username,
+git config (`user.name` / `user.email`), or any data scraped from your
+chart.
+
+To disable telemetry entirely, set:
+
+```bash
+export MYCHART_CONNECTOR_TELEMETRY_DISABLED=1
+```
+
 ## License
 
 This package is distributed under a proprietary source-available license. See

@@ -1,6 +1,7 @@
 import { CookieJar } from 'tough-cookie'
 import fs from 'fs';
 import {mockRequest} from './mock_data/index'
+import { MOCK_DATA } from '../../shared/env';
 import { RequestConfig } from './types';
 
 /**
@@ -234,7 +235,7 @@ export class MyChartRequest {
 
     let response ;
 
-    if (process.env.MOCK_DATA) {
+    if (MOCK_DATA) {
       response = await mockRequest(url, finalConfig)
       console.log('MOCK:', response.status, url)
     }
