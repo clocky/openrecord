@@ -245,7 +245,7 @@ maestro-cli reset-keychain            # wipe sim keychain (forgets logins/setup_
 
 Env vars:
 - `MAESTRO_APP_ID` — bundle id (default `com.fanpierlabs.openrecord`).
-- `MAESTRO_UDID` — iOS simulator UDID. When unset, `maestro-cli` falls back to whatever it can find via xcrun, which is **non-deterministic when multiple sims are booted** — exactly what happens when multiple Claude sessions are running in parallel. Always set `MAESTRO_UDID` explicitly at the start of a session that touches the sim, so the agent only ever drives its own sim and never steps on another Claude's work.
+- `MAESTRO_UDID` — **REQUIRED.** iOS simulator UDID. `maestro-cli` will exit non-zero immediately if this is unset. There's no fallback, on purpose — multiple Claude sessions run in parallel and a default would let one agent silently drive another agent's sim.
 
 Find UDIDs with `xcrun simctl list devices booted`. Then either:
 
