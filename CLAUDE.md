@@ -226,6 +226,35 @@ Use **`maestro-cli`** (already installed at `~/.local/bin/maestro-cli`) for ever
 - **NEVER click on the simulator by computing pixel coordinates against the simulator window position.** It's brittle, focus-races with whatever the user is doing, and breaks on every window move or sim resize. Use `maestro-cli` instead — it talks to the simulator through iOS's native automation hooks, not the macOS cursor.
 - **Do not install a separate Maestro.** The brew `maestro` cask is a different product (runmaestro.ai). The mobile.dev Maestro CLI is what `maestro-cli` wraps and it's already on PATH.
 
+### Starting a sim session (do this exactly once per Claude session)
+
+Every Claude session that touches the simulator must own a fresh, dedicated sim — never share one with another running Claude. The recipe:
+
+```bash
+# 1. Create a new simulator. simctl assigns a UDID and prints it.
+UDID=$(xcrun simctl create "claude-$(date +%Y%m%d)-$(openssl rand -hex 3)" \
+  "iPhone 17" \
+  "com.apple.CoreSimulator.SimRuntime.iOS-26-1")
+
+# 2. Boot it and surface the Simulator.app window so the user can watch.
+xcrun simctl boot "$UDID"
+open -a Simulator
+
+# 3. Pin the UDID for the rest of the session. The Bash tool's shell state
+#    persists across tool calls, so this one export is enough — every later
+#    maestro-cli invocation picks it up automatically.
+export MAESTRO_UDID="$UDID"
+
+# 4. Build + install + launch the Expo app on this exact sim.
+cd expo-app && bunx expo run:ios --device "$UDID" --port 8083 &
+```
+
+Notes:
+- The UDID is CoreSimulator-assigned, not Claude-generated. Capture it from `simctl create`'s stdout.
+- Naming pattern `claude-<date>-<random>` makes orphaned sims easy to spot and bulk-delete: `xcrun simctl delete $(xcrun simctl list devices | grep -E 'claude-[0-9]{8}-' | grep -oE '[A-F0-9-]{36}')`.
+- Use a port other than 8081 if other Claude instances are running their own Metro on the default port. Pick deterministically (8082, 8083, …) and pass `--port` to `expo run:ios`.
+- At end of session: `xcrun simctl shutdown "$MAESTRO_UDID" && xcrun simctl delete "$MAESTRO_UDID"`. Leave it running only if the user explicitly wants to keep it.
+
 **Common commands** (full reference: `maestro-cli --help`):
 
 ```
