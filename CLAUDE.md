@@ -80,6 +80,11 @@ The web app supports two deployment modes, auto-detected via the `DATABASE_URL` 
   - Config: `web/deploy.yaml`
   - Domain: `openrecord.fanpierlabs.com` (CloudFront + ALB + Route53). Old domain `mychart.fanpierlabs.com` redirects via next.config.ts.
   - Region: `us-east-2`
+- **Fake MyChart** (`fake-mychart/`): Separate Fargate app deployed independently from the web app. **Run the deploy script from inside `fake-mychart/`** so the relative `Dockerfile` path resolves to `fake-mychart/Dockerfile` (not the repo-root web app Dockerfile):
+  - `cd fake-mychart && python3 ../node_modules/deploy/main.py --config deploy.yaml`
+  - Config: `fake-mychart/deploy.yaml`
+  - Domain: `fake-mychart.fanpierlabs.com` (its own ALB + ECS service `fake-mychart-service` in cluster `fake-mychart-cluster`)
+  - Region: `us-east-2`
 
 ### Railway / Self-Hosted
 
